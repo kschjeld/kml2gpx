@@ -12,64 +12,73 @@ import (
 
 func main() {
 	if len(os.Args) != 2 {
-		panic("expecting exactly one argument")
+		fmt.Printf("Usage: %s [KML file]", os.Args[0])
+		os.Exit(1)
 	}
 
 	b, err := os.ReadFile(os.Args[1])
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: Unable to open input file: %s\n", err)
+		os.Exit(1)
 	}
 
 	var doc KML
-
 	if err := xml.Unmarshal(b, &doc); err != nil {
-		panic(err)
+		fmt.Printf("ERROR: Unable to parse KML file: %s\n", err)
+		os.Exit(1)
 	}
 
-	coords := doc.Document.Placemark.LineString.CoordinateList()
-	fmt.Printf("Read: %v\n# coordinates: %d\n", doc.Document.Placemark.Name, len(coords))
-	fmt.Printf("First coord: %d %f %f\n", coords[0].Pos, coords[0].Lon, coords[0].Lat)
+	coords, err := doc.Document.Placemark.LineString.CoordinateList()
+	if err != nil {
+		fmt.Printf("ERROR: Unable to parse coordinates in KML file: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Read: %v, number of coordinates: %d\n", doc.Document.Placemark.Name, len(coords))
 
+	// Convert waypoints
+	var wpts []*gpx.WptType
+	for i, c := range coords {
+		wpt := &gpx.WptType{
+			Lat:  c.Lat,
+			Lon:  c.Lon,
+			Name: fmt.Sprintf("%d", i+1),
+		}
+		wpts = append(wpts, wpt)
+	}
+
+	// Create GPX structure
 	g := &gpx.GPX{
 		Version: "1.0",
 		Creator: "Kml2Gpx - http://www.edgeworks.no",
+		Trk: []*gpx.TrkType{{
+			Name: doc.Document.Placemark.Name,
+			TrkSeg: []*gpx.TrkSegType{{
+				TrkPt: wpts,
+			}},
+		}},
 	}
 
-	track := &gpx.TrkType{
-		Name:   doc.Document.Placemark.Name,
-		TrkSeg: nil,
-	}
-	g.Trk = append(g.Trk, track)
-	seg := &gpx.TrkSegType{
-		TrkPt:      nil,
-		Extensions: nil,
-	}
-	track.TrkSeg = append(track.TrkSeg, seg)
-
-	for _, c := range coords {
-		wpt := &gpx.WptType{
-			Lat: c.Lat,
-			Lon: c.Lon,
-		}
-		seg.TrkPt = append(seg.TrkPt, wpt)
-	}
-
-	f, err := os.Create(fmt.Sprintf("%s.%s", os.Args[1], "gpx"))
+	// Write to output file
+	outputFile := fmt.Sprintf("%s.%s", os.Args[1], "gpx")
+	f, err := os.Create(outputFile)
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: Unable to create output file: %s\n", err)
+		os.Exit(1)
 	}
+
 	fw := bufio.NewWriter(f)
 	defer f.Close()
-
 	if _, err := fw.WriteString(xml.Header); err != nil {
-		panic(err)
+		fmt.Printf("ERROR: Unable to write output file: %s\n", err)
+		os.Exit(1)
 	}
 
 	if err := g.WriteIndent(fw, "", " "); err != nil {
-		panic(err)
+		fmt.Printf("ERROR: Unable to write output file: %s\n", err)
+		os.Exit(1)
 	}
-	fw.Flush()
-
+	_ = fw.Flush()
+	fmt.Printf("Wrote output file: %s\n", outputFile)
 }
 
 type KML struct {
@@ -96,22 +105,22 @@ type Coordinate struct {
 	Lon float64
 }
 
-func (l LineString) CoordinateList() []Coordinate {
+func (l LineString) CoordinateList() ([]Coordinate, error) {
 	var coords []Coordinate
 	for _, c := range strings.Split(l.Coordinates, " ") {
 		s := strings.Split(c, ",")
 
 		p, err := strconv.Atoi(s[2])
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to convert number: %v", err)
 		}
 		lon, err := strconv.ParseFloat(s[0], 64)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to convert coordinate: %v", err)
 		}
 		lat, err := strconv.ParseFloat(s[1], 64)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to convert coordinate: %v", err)
 		}
 
 		coord := Coordinate{
@@ -121,5 +130,5 @@ func (l LineString) CoordinateList() []Coordinate {
 		}
 		coords = append(coords, coord)
 	}
-	return coords
+	return coords, nil
 }
