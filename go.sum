@@ -8,7 +8,7 @@ github.com/twpayne/go-geom v1.5.6 h1:SddE+LZrrzRMrCQHEVI1DXpjf5s98yygUwvmoDkisnk
 github.com/twpayne/go-geom v1.5.6/go.mod h1:y4fTAQtLedXW8eG2Yo4tYrIGN1yIwwKkmA+K3iSHKBA=
 github.com/twpayne/go-gpx v1.3.3 h1:/ee26rViHk6Qeq3/QO0CsQgtMqu4GRbWHRJHU6Q9Tus=
 github.com/twpayne/go-gpx v1.3.3/go.mod h1:YIOptxbFIb0yuxhPuET7dMFzNM2BLIBe2D+nZ/aAtRk=
-golang.org/x/net v0.28.0 h1:a9JDOJc5GMUJ0+UDqmLT86WiEy7iWyIhz8gz8E4e5hE=
-golang.org/x/net v0.28.0/go.mod h1:yqtgsTWOOnlGLG9GFRrK3++bGOUEkNBoHZc8MEDWPNg=
-golang.org/x/text v0.17.0 h1:XtiM5bkSOt+ewxlOE/aE/AKEHibwj/6gvWMl9Rsh0Qc=
-golang.org/x/text v0.17.0/go.mod h1:BuEKDfySbSR4drPmRPG/7iBdf8hvFMuRexcpahXilzY=
+golang.org/x/net v0.55.0 h1:bcvxaJn3e1U6InsFWt1JUq1aSjnRxLzT2rtD2KfkDF8=
+golang.org/x/net v0.55.0/go.mod h1:L5U2KuzuOe1lY7Z+aWVIKK6qEeJXnXV9yzGA+WCHJww=
+golang.org/x/text v0.37.0 h1:Cqjiwd9eSg8e0QAkyCaQTNHFIIzWtidPahFWR83rTrc=
+golang.org/x/text v0.37.0/go.mod h1:a5sjxXGs9hsn/AJVwuElvCAo9v8QYLzvavO5z2PiM38=
